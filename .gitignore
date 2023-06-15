@@ -5,7 +5,12 @@ __pycache__/
 
 # C extensions
 *.so
-
+out_logs/
+mjrl/
+acme/
+D4RL/
+.idea/
+tmp/
 # Distribution / packaging
 .Python
 build/

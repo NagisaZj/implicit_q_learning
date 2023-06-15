@@ -39,7 +39,7 @@ python train_offline.py --env_name=halfcheetah-medium-expert-v2 --config=configs
 
 AntMaze
 ```bash
-python train_offline.py --env_name=antmaze-large-play-v0 --config=configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000
+XLA_PYTHON_CLIENT_PREALLOCATE=false  CUDA_VISIBLE_DEVICES=7 python train_offline.py --env_name=antmaze-medium-play-v0 --config=configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000 --seed 43
 ```
 
 Kitchen and Adroit

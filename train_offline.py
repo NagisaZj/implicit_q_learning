@@ -9,15 +9,18 @@ from ml_collections import config_flags
 from tensorboardX import SummaryWriter
 
 import wrappers
-from dataset_utils import D4RLDataset, split_into_trajectories
+from dataset_utils import D4RLDataset, split_into_trajectories,TopkD4RLDataset
 from evaluation import evaluate
 from learner import Learner
 
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('env_name', 'halfcheetah-expert-v2', 'Environment name.')
+flags.DEFINE_string('reward_model_path', "", 'Reward Model Path')
+flags.DEFINE_boolean('disable_pds', False, 'Disable PDS')
 flags.DEFINE_string('save_dir', './tmp/', 'Tensorboard logging dir.')
 flags.DEFINE_integer('seed', 42, 'Random seed.')
+flags.DEFINE_integer('k', 10, 'Top k selection.')
 flags.DEFINE_integer('eval_episodes', 10,
                      'Number of episodes used for evaluation.')
 flags.DEFINE_integer('log_interval', 1000, 'Logging interval.')
@@ -53,7 +56,7 @@ def normalize(dataset):
 
 
 def make_env_and_dataset(env_name: str,
-                         seed: int) -> Tuple[gym.Env, D4RLDataset]:
+                         seed: int):
     env = gym.make(env_name)
 
     env = wrappers.EpisodeMonitor(env)
@@ -63,7 +66,8 @@ def make_env_and_dataset(env_name: str,
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
-    dataset = D4RLDataset(env)
+    # dataset = D4RLDataset(env,reward_model_path=FLAGS.reward_model_path,disable_pds=FLAGS.disable_pds)
+    dataset = TopkD4RLDataset(env,env_name,FLAGS.k)
 
     if 'antmaze' in FLAGS.env_name:
         dataset.rewards -= 1.0
@@ -72,7 +76,10 @@ def make_env_and_dataset(env_name: str,
     elif ('halfcheetah' in FLAGS.env_name or 'walker2d' in FLAGS.env_name
           or 'hopper' in FLAGS.env_name):
         normalize(dataset)
-
+    # dataset.rewards = np.ones_like(dataset.rewards)*np.mean(dataset.rewards)
+    # dataset.rewards = dataset.rewards  * -1
+    # dataset.rewards = np.zeros_like(dataset.rewards)
+    # dataset.rewards = np.random.rand(dataset.rewards.shape[0])*2-1
     return env, dataset
 
 
